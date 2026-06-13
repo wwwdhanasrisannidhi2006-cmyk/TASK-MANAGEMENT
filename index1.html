@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TaskFlow - Task Management</title>
+<style>
+:root {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --danger: #ef4444;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --border: #334155;
+  --radius: 12px;
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn {
+  padding: 0.6rem 1.2rem;
+  background: var(--primary);
+  color: white;
+}
+
+.btn:hover {
+  background: var(--primary-hover);
+}
+
+.btn-danger {
+  background: var(--danger);
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.btn-ghost:hover {
+  background: var(--card);
+  color: var(--text);
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 0.7rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: -1px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+/* Auth Screens */
+.auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-card h1 {
+  text-align: center;
+  margin-bottom: 0.5rem;
+  font-size: 1.8rem;
+}
+
+.auth-card .subtitle {
+  text-align: center;
+  color: var(--muted);
+  margin-bottom: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.auth-switch {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: var(--muted);
+}
+
+.auth-switch a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
+}
+
+/* App Layout */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header h1 {
+  font-size: 1.8rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.badge {
+  padding: 0.3rem 0.8rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.ws-status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.ws-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .controls {
+    grid-template-columns: 1fr;
+  }
+}
+
+.task-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.task-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  align-items: flex-start;
+}
+
+.task-item.completed {
+  opacity: 0.6;
+}
+
+.task-item.completed .task-title {
+  text-decoration: line-through;
+}
+
+.task-checkbox {
+  width: 20px;
+  height: 20px;
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.task-content {
+  flex: 1;
+}
+
+.task-title {
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.task-desc {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.task-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.task-priority {
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.priority-high { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+.priority-medium { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+.priority-low { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+
+.task-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.task-actions button {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 100;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--muted);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.error {
+  color: var(--danger);
+  font-size: 0.85rem;
+  margin-top: 0.3rem;
+}
+</style>
+</head>
+<body>
+
+<!-- Auth Screen -->
+<div id="authScreen" class="auth-container">
+  <div class="auth-card card">
+    <h1>TaskFlow</h1>
+    <p class="subtitle" id="authSubtitle">Sign in to manage your tasks</p>
+    
+    <form id="authForm">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" required>
+        <div class="error" id="emailError"></div>
+      </div>
+      
+      <div class="form-group" id="nameGroup">
+        <label>Name</label>
+        <input type="text" id="name">
+      </div>
+      
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password" required minlength="6">
+        <div class="error" id="passwordError"></div>
+      </div>
+      
+      <button type="submit" class="btn" style="width:100%" id="authBtn">Sign In</button>
+    </form>
+    
+    <div class="auth-switch">
+      <span id="authSwitchText">Don't have an account?</span>
+      <a href="#" id="authSwitchLink">Sign Up</a>
+    </div>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="appScreen" class="container hidden">
+  <div class="header">
+    <h1>TaskFlow</h1>
+    <div class="user-info">
+      <div class="ws-status badge">
+        <div class="ws-dot"></div>
+        <span>Live Sync</span>
+      </div>
+      <span id="userName" class="badge"></span>
+      <button class="btn-ghost" id="logoutBtn">Logout</button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <input type="text" id="searchInput" placeholder="Search tasks...">
+    <select id="filterStatus">
+      <option value="all">All Tasks</option>
+      <option value="active">Active</option>
+      <option value="completed">Completed</option>
+    </select>
+    <button class="btn" id="addTaskBtn">+ New Task</button>
+  </div>
+
+  <div class="card">
+    <div id="taskList" class="task-grid"></div>
+    <div id="emptyState" class="empty-state hidden">
+      <p>No tasks yet. Create your first task to get started!</p>
+    </div>
+  </div>
+</div>
+
+<!-- Task Modal -->
+<div id="taskModal" class="modal">
+  <div class="modal-content card">
+    <div class="modal-header">
+      <h2 id="modalTitle">New Task</h2>
+      <button class="btn-ghost" id="closeModal">✕</button>
+    </div>
+    
+    <form id="taskForm">
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="taskTitle" required>
+      </div>
+      
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="taskDesc" rows="3"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label>Priority</label>
+        <select id="taskPriority">
+          <option value="low">Low</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High</option>
+        </select>
+      </div>
+      
+      <button type="submit" class="btn" style="width:100%">Save Task</button>
+    </form>
+  </div>
+</div>
+
+<script>
+// --- State & Storage ---
+const DB = {
+  users: 'taskapp_users',
+  currentUser: 'taskapp_current_user',
+  tasks: 'taskapp_tasks'
+};
+
+let state = {
+  user: null,
+  tasks: [],
+  editingId: null,
+  isLogin: true
+};
+
+// WebSocket simulation using BroadcastChannel for real-time sync between tabs
+const channel = new BroadcastChannel('taskapp_sync');
+channel.onmessage = (e) => {
+  if (e.data.type === 'TASKS_UPDATED' && e.data.userId === state.user?.id) {
+    loadTasks();
+    renderTasks();
+  }
+};
+
+// --- Auth ---
+function init() {
+  const savedUser = localStorage.getItem(DB.currentUser);
+  if (savedUser) {
+    state.user = JSON.parse(savedUser);
+    showApp();
+  } else {
+    showAuth();
+  }
+}
+
+function showAuth() {
+  document.getElementById('authScreen').classList.remove('hidden');
+  document.getElementById('appScreen').classList.add('hidden');
+}
+
+function showApp() {
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('appScreen').classList.remove('hidden');
+  document.getElementById('userName').textContent = state.user.name;
+  loadTasks();
+  renderTasks();
+}
+
+function getUsers() {
+  return JSON.parse(localStorage.getItem(DB.users) || '[]');
+}
+
+function saveUsers(users) {
+  localStorage.setItem(DB.users, JSON.stringify(users));
+}
+
+function handleAuth(e) {
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const name = document.getElementById('name').value.trim();
+  
+  document.getElementById('emailError').textContent = '';
+  document.getElementById('passwordError').textContent = '';
+  
+  if (password.length < 6) {
+    document.getElementById('passwordError').textContent = 'Password must be 6+ characters';
+    return;
+  }
+  
+  let users = getUsers();
+  
+  if (state.isLogin) {
+    const user = users.find(u => u.email === email && u.password === password);
+    if (!user) {
+      document.getElementById('passwordError').textContent = 'Invalid email or password';
+      return;
+    }
+    state.user = { id: user.id, email: user.email, name: user.name };
+  } else {
+    if (!name) {
+      document.getElementById('emailError').textContent = 'Name is required';
+      return;
+    }
+    if (users.find(u => u.email === email)) {
+      document.getElementById('emailError').textContent = 'Email already exists';
+      return;
+    }
+    const newUser = { id: Date.now(), email, password, name };
+    users.push(newUser);
+    saveUsers(users);
+    state.user = { id: newUser.id, email: newUser.email, name: newUser.name };
+  }
+  
+  localStorage.setItem(DB.currentUser, JSON.stringify(state.user));
+  showApp();
+}
+
+function logout() {
+  localStorage.removeItem(DB.currentUser);
+  state.user = null;
+  showAuth();
+}
+
+function toggleAuthMode() {
+  state.isLogin = !state.isLogin;
+  document.getElementById('nameGroup').style.display = state.isLogin ? 'none' : 'block';
+  document.getElementById('authBtn').textContent = state.isLogin ? 'Sign In' : 'Sign Up';
+  document.getElementById('authSubtitle').textContent = state.isLogin ? 'Sign in to manage your tasks' : 'Create an account to get started';
+  document.getElementById('authSwitchText').textContent = state.isLogin ? "Don't have an account?" : "Already have an account?";
+  document.getElementById('authSwitchLink').textContent = state.isLogin ? 'Sign Up' : 'Sign In';
+}
+
+// --- Tasks CRUD ---
+function loadTasks() {
+  const allTasks = JSON.parse(localStorage.getItem(DB.tasks) || '{}');
+  state.tasks = allTasks[state.user.id] || [];
+}
+
+function saveTasks() {
+  const allTasks = JSON.parse(localStorage.getItem(DB.tasks) || '{}');
+  allTasks[state.user.id] = state.tasks;
+  localStorage.setItem(DB.tasks, JSON.stringify(allTasks));
+  // Broadcast to other tabs
+  channel.postMessage({ type: 'TASKS_UPDATED', userId: state.user.id });
+}
+
+function renderTasks() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const filter = document.getElementById('filterStatus').value;
+  
+  let filtered = state.tasks.filter(t => {
+    const matchesSearch = t.title.toLowerCase().includes(search) || t.desc.toLowerCase().includes(search);
+    const matchesFilter = filter === 'all' || 
+      (filter === 'active' && !t.completed) || 
+      (filter === 'completed' && t.completed);
+    return matchesSearch && matchesFilter;
+  });
+  
+  const list = document.getElementById('taskList');
+  const empty = document.getElementById('emptyState');
+  
+  if (filtered.length === 0) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  
+  empty.classList.add('hidden');
+  list.innerHTML = filtered.map(task => `
+    <div class="task-item ${task.completed ? 'completed' : ''}">
+      <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} 
+        onchange="toggleTask(${task.id})">
+      <div class="task-content">
+        <div class="task-title">${escapeHtml(task.title)}</div>
+        ${task.desc ? `<div class="task-desc">${escapeHtml(task.desc)}</div>` : ''}
+        <div class="task-meta">
+          <span class="task-priority priority-${task.priority}">${task.priority}</span>
+          <span>${new Date(task.createdAt).toLocaleDateString()}</span>
+        </div>
+      </div>
+      <div class="task-actions">
+        <button class="btn-ghost" onclick="editTask(${task.id})">Edit</button>
+        <button class="btn-danger" onclick="deleteTask(${task.id})">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openTaskModal(task = null) {
+  state.editingId = task?.id || null;
+  document.getElementById('modalTitle').textContent = task ? 'Edit Task' : 'New Task';
+  document.getElementById('taskTitle').value = task?.title || '';
+  document.getElementById('taskDesc').value = task?.desc || '';
+  document.getElementById('taskPriority').value = task?.priority || 'medium';
+  document.getElementById('taskModal').classList.add('active');
+}
+
+function closeTaskModal() {
+  document.getElementById('taskModal').classList.remove('active');
+  document.getElementById('taskForm').reset();
+  state.editingId = null;
+}
+
+function handleTaskSubmit(e) {
+  e.preventDefault();
+  const title = document.getElementById('taskTitle').value.trim();
+  const desc = document.getElementById('taskDesc').value.trim();
+  const priority = document.getElementById('taskPriority').value;
+  
+  if (!title) return;
+  
+  if (state.editingId) {
+    const task = state.tasks.find(t => t.id === state.editingId);
+    task.title = title;
+    task.desc = desc;
+    task.priority = priority;
+  } else {
+    state.tasks.unshift({
+      id: Date.now(),
+      title,
+      desc,
+      priority,
+      completed: false,
+      createdAt: new Date().toISOString()
+    });
+  }
+  
+  saveTasks();
+  renderTasks();
+  closeTaskModal();
+}
+
+function toggleTask(id) {
+  const task = state.tasks.find(t => t.id === id);
+  task.completed = !task.completed;
+  saveTasks();
+  renderTasks();
+}
+
+function editTask(id) {
+  const task = state.tasks.find(t => t.id === id);
+  openTaskModal(task);
+}
+
+function deleteTask(id) {
+  if (!confirm('Delete this task?')) return;
+  state.tasks = state.tasks.filter(t => t.id !== id);
+  saveTasks();
+  renderTasks();
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// --- Event Listeners ---
+document.getElementById('authForm').addEventListener('submit', handleAuth);
+document.getElementById('authSwitchLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  toggleAuthMode();
+});
+document.getElementById('logoutBtn').addEventListener('click', logout);
+document.getElementById('addTaskBtn').addEventListener('click', () => openTaskModal());
+document.getElementById('closeModal').addEventListener('click', closeTaskModal);
+document.getElementById('taskForm').addEventListener('submit', handleTaskSubmit);
+document.getElementById('searchInput').addEventListener('input', renderTasks);
+document.getElementById('filterStatus').addEventListener('change', renderTasks);
+
+// Close modal on backdrop click
+document.getElementById('taskModal').addEventListener('click', (e) => {
+  if (e.target.id === 'taskModal') closeTaskModal();
+});
+
+// Init
+document.getElementById('nameGroup').style.display = 'none';
+init();
+</script>
+</body>
+</html>
